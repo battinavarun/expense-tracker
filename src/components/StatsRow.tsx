@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { CalendarClock, Landmark, PiggyBank, Scale, Sun, TrendingDown, TrendingUp, Wallet, HandCoins } from 'lucide-react';
 import type { MonthSummary } from '../lib/calc';
-import { CORAL, EMERALD, healthColor } from '../lib/colors';
+import { CORAL, EMERALD } from '../lib/colors';
 import { formatINR, formatINRWhole, formatPercent } from '../lib/format';
 import { useStore } from '../store/store';
 import { AnimatedNumber } from './AnimatedNumber';
@@ -15,7 +15,7 @@ interface Props {
 
 export function StatsRow({ summary, onEditBudget, onMoneyIn, onReconcile }: Props) {
   const { state, dispatch } = useStore();
-  const accent = healthColor(summary.ratio);
+  const accent = summary.accent;
   const ins = summary.insights;
 
   const extras = [
@@ -23,8 +23,9 @@ export function StatsRow({ summary, onEditBudget, onMoneyIn, onReconcile }: Prop
     summary.carried > 0 ? `${formatINRWhole(summary.carried)} carried` : '',
   ].filter(Boolean);
 
-  const dailyText =
-    summary.dailySafe === null
+  const dailyText = !summary.budgetSet
+    ? 'Set your budget first'
+    : summary.dailySafe === null
       ? 'Month complete'
       : summary.remaining <= 0
         ? 'Nothing left to spend'
@@ -44,7 +45,7 @@ export function StatsRow({ summary, onEditBudget, onMoneyIn, onReconcile }: Prop
         <Tile
           icon={<Landmark size={15} />}
           label="Starting budget"
-          sub={extras.length ? `incl. ${extras.join(' + ')}` : 'Tap to edit'}
+          sub={!summary.budgetSet ? 'Tap to set your budget' : extras.length ? `incl. ${extras.join(' + ')}` : 'Tap to edit'}
           onClick={onEditBudget}
           glow="#38bdf8"
         >
@@ -61,7 +62,7 @@ export function StatsRow({ summary, onEditBudget, onMoneyIn, onReconcile }: Prop
         <Tile
           icon={<Wallet size={15} />}
           label="Remaining"
-          sub={summary.over ? 'You have gone over budget' : `${formatPercent(Math.max(0, summary.ratio))} left`}
+          sub={!summary.budgetSet ? 'Set your budget first' : summary.over ? 'You have gone over budget' : `${formatPercent(Math.max(0, summary.ratio))} left`}
           valueColor={accent}
           glow={accent}
         >
@@ -96,14 +97,16 @@ export function StatsRow({ summary, onEditBudget, onMoneyIn, onReconcile }: Prop
           icon={<TrendingUp size={15} />}
           label="Month-end forecast"
           sub={
-            ins.projected === null
-              ? 'Starts when the month does'
-              : projLeft !== null && projLeft < 0
+            !summary.budgetSet
+              ? 'Set your budget first'
+              : ins.projected === null
+                ? 'Starts when the month does'
+                : projLeft !== null && projLeft < 0
                 ? `At this pace you'll overshoot by ${formatINRWhole(-projLeft)}`
                 : `At this pace you'll finish ${formatINRWhole(projLeft ?? 0)} ahead`
           }
-          valueColor={projColor}
-          glow={projColor ?? '#a78bfa'}
+          valueColor={summary.budgetSet ? projColor : undefined}
+          glow={(summary.budgetSet && projColor) || '#a78bfa'}
         >
           {ins.projected === null ? '—' : <AnimatedNumber value={ins.projected} format={formatINRWhole} />}
         </Tile>

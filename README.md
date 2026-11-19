@@ -1,7 +1,8 @@
 # Rupee Vault — 3D Monthly Expense Tracker
 
-A tactile, neumorphic expense tracker built around a **₹44,280** monthly budget (editable). No preset 50/30/20
-rules: you create your own categories, optionally give them limits, or just log spending against the pool.
+A tactile, neumorphic expense tracker built around **your own monthly budget**. Everything starts at **₹0**: on first launch a
+prompt asks how much you have to spend each month (nothing is pre-filled; you can skip it and stay at ₹0, and change it anytime). No preset 50/30/20 rules: you create your own
+categories, optionally give them limits, or just log spending against the pool.
 
 ## Features
 

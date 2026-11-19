@@ -13,11 +13,12 @@ import {
   Upload,
   Box,
 } from 'lucide-react';
-import type { AppState, MonthKey, ViewMode } from '../types';
+import type { MonthKey, ViewMode } from '../types';
 import { currentMonthKey, monthLabel, shiftMonth } from '../lib/dates';
-import { emptyState, exportCSV, exportJSON, sanitizeState } from '../lib/storage';
+import { emptyState, exportCSV, exportJSON } from '../lib/storage';
 import { useStore } from '../store/store';
 import { useToast } from './Toast';
+import { useBackupImport } from './useBackupImport';
 
 interface TopBarProps {
   month: MonthKey;
@@ -119,27 +120,10 @@ function DataMenu({ month }: { month: MonthKey }) {
     };
   }, [open]);
 
+  const importBackup = useBackupImport();
   const onImport = async (file: File | undefined) => {
-    if (!file) return;
-    try {
-      if (file.size > 10 * 1024 * 1024) throw new Error('That file is too large to be a backup.');
-      const parsed: unknown = JSON.parse(await file.text());
-      const looksRight =
-        typeof parsed === 'object' && parsed !== null && ('expenses' in parsed || 'categories' in parsed);
-      if (!looksRight) throw new Error('This does not look like a Rupee Vault backup.');
-      const next: AppState = sanitizeState(parsed);
-      const ok = window.confirm(
-        `Import ${next.expenses.length} expenses and ${next.categories.length} categories?\n\nThis REPLACES everything currently in the app. Export a backup first if you are unsure.`,
-      );
-      if (!ok) return;
-      dispatch({ type: 'REPLACE_ALL', state: next });
-      toast(`Imported ${next.expenses.length} expenses`);
-      setOpen(false);
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not read that file.', { tone: 'error' });
-    } finally {
-      if (fileRef.current) fileRef.current.value = '';
-    }
+    if (await importBackup(file)) setOpen(false);
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const item = 'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm hover:bg-white/5';

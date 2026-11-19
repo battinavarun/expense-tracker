@@ -2,6 +2,7 @@ import type { AppState, Category, DateKey, Expense, Income, MonthKey, PaymentMet
 import { compareMonths, daysInMonth, monthOf, shiftMonth, todayKey } from './dates';
 import { round2 } from './format';
 import { NONE_KEY } from './keys';
+import { healthColor, healthLabel } from './colors';
 
 export interface CategoryStat {
   /** null id = Uncategorized */
@@ -58,6 +59,12 @@ export interface Insights {
 
 export interface MonthSummary {
   month: MonthKey;
+  /** False until the user has entered a budget — everything then reads ₹0. */
+  budgetSet: boolean;
+  /** Health colour for glows/accents (neutral slate while no budget is set). */
+  accent: string;
+  /** Short status word for the card ("On track", "Set your budget", …). */
+  status: string;
   /** The budget set for this month (override or default). */
   baseBudget: number;
   /** Leftover brought in from earlier months (0 when carry-forward is off). */
@@ -86,7 +93,7 @@ export const UNCATEGORIZED_COLOR = '#64748b';
 
 export function budgetFor(state: Pick<AppState, 'defaultBudget' | 'budgetOverrides'>, month: MonthKey): number {
   const o = state.budgetOverrides[month];
-  return typeof o === 'number' && Number.isFinite(o) ? o : state.defaultBudget;
+  return typeof o === 'number' && Number.isFinite(o) ? o : (state.defaultBudget ?? 0);
 }
 
 function sum(list: Array<{ amount: number }>): number {
@@ -178,7 +185,8 @@ export function summarizeMonth(state: AppState, month: MonthKey, today: string =
   const available = round2(baseBudget + carried + income);
   const spent = sum(expenses);
   const remaining = round2(available - spent);
-  const ratio = available > 0 ? remaining / available : remaining >= 0 ? 1 : 0;
+  const ratio = available > 0 ? remaining / available : 0;
+  const budgetSet = state.defaultBudget !== null || typeof state.budgetOverrides[month] === 'number';
 
   const dim = daysInMonth(month);
   const thisMonth = monthOf(today);
@@ -244,6 +252,9 @@ export function summarizeMonth(state: AppState, month: MonthKey, today: string =
 
   return {
     month,
+    budgetSet,
+    accent: budgetSet ? healthColor(ratio) : '#64748b',
+    status: budgetSet ? healthLabel(ratio, remaining < 0) : 'Set your budget',
     baseBudget,
     carried,
     income,

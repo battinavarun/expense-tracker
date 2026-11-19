@@ -1,5 +1,4 @@
 import {
-  DEFAULT_BUDGET,
   PAYMENT_METHODS,
   type AppState,
   type Category,
@@ -15,8 +14,8 @@ export const STORAGE_KEY = 'rupee-vault:v1';
 
 export function emptyState(): AppState {
   return {
-    version: 1,
-    defaultBudget: DEFAULT_BUDGET,
+    version: 2,
+    defaultBudget: null,
     budgetOverrides: {},
     carryForward: false,
     viewMode: 'interactive',
@@ -49,10 +48,12 @@ export function sanitizeState(raw: unknown): AppState {
   const base = emptyState();
   if (!isObj(raw)) return base;
 
-  const defaultBudget = money(raw.defaultBudget);
-  if (defaultBudget !== null) base.defaultBudget = defaultBudget;
+  // Only budgets written by this schema version are trusted. Older versions pre-filled ₹44,280 and auto-saved it,
+  // so a stored v1 budget may never have been chosen by the user — drop it (data is kept) and ask again.
+  const trustBudget = raw.version === 2;
+  base.defaultBudget = trustBudget ? money(raw.defaultBudget) : null;
 
-  if (isObj(raw.budgetOverrides)) {
+  if (trustBudget && isObj(raw.budgetOverrides)) {
     for (const [k, v] of Object.entries(raw.budgetOverrides)) {
       const m = money(v);
       if (isValidMonthKey(k) && m !== null) base.budgetOverrides[k] = m;

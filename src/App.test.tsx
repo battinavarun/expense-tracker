@@ -5,6 +5,7 @@ import App from './App';
 import { StoreProvider } from './store/store';
 import { ToastProvider } from './components/Toast';
 import { STORAGE_KEY } from './lib/storage';
+import { todayKey } from './lib/dates';
 
 // The WebGL scene needs a real GPU; the app lazy-loads it, so stub it for jsdom.
 vi.mock('./components/Scene3D', () => ({ default: () => <div data-testid="pillars-3d" /> }));
@@ -44,16 +45,97 @@ const mount = () =>
     </StoreProvider>,
   );
 
-describe('<App /> smoke test', () => {
-  it('starts empty at ₹44,280 with onboarding and no forced categories', () => {
+/** Mounts the app and answers the first-run "what's your monthly budget?" question. */
+const mountReady = (budget = '44,280') => {
+  const utils = mount();
+  fireEvent.change(screen.getByLabelText('Monthly budget'), { target: { value: budget } });
+  fireEvent.click(screen.getByRole('button', { name: /Start tracking/ }));
+  return utils;
+};
+
+describe('first run: everything starts at ₹0 and asks for your budget', () => {
+  it('opens a blank budget prompt over a dashboard that reads ₹0', () => {
     mount();
-    expect(screen.getAllByText(/₹44,280/).length).toBeGreaterThan(0);
+    const input = screen.getByLabelText('Monthly budget') as HTMLInputElement;
+    expect(input.value).toBe('');
+    expect(input.placeholder).toBe('0');
+    expect(screen.queryByText(/44,280/)).toBeNull();
+    // the dashboard behind it exists, with every headline number at zero
+    expect(screen.getByLabelText('Remaining balance ₹0')).toBeTruthy();
+    expect(screen.getByText('Set your budget')).toBeTruthy(); // card status
+    expect(screen.getByLabelText('Log an expense')).toBeTruthy();
+  });
+
+  it('rejects empty / zero / junk budgets and stays at ₹0', () => {
+    mount();
+    for (const bad of ['', '0', 'abc', '-5']) {
+      fireEvent.change(screen.getByLabelText('Monthly budget'), { target: { value: bad } });
+      fireEvent.click(screen.getByRole('button', { name: /Start tracking/ }));
+      expect(screen.getByRole('alert').textContent).toMatch(/greater than ₹0/);
+    }
+    expect(screen.getByLabelText('Remaining balance ₹0')).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').defaultBudget).toBeNull();
+  });
+
+  it('uses whatever amount the user enters, and remembers it', () => {
+    mountReady('30,000');
+    expect(screen.getByLabelText(/Remaining balance ₹30,000/)).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').defaultBudget).toBe(30000);
+    // reload: no prompt again
+    cleanup();
+    mount();
+    expect(screen.queryByLabelText('Monthly budget')).toBeNull();
+    expect(screen.getByLabelText(/Remaining balance ₹30,000/)).toBeTruthy();
+  });
+
+  it('"Skip" keeps everything at ₹0, and logging an expense asks for the budget instead of saving', () => {
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: /Skip for now/ }));
+    expect(screen.getByLabelText('Remaining balance ₹0')).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '250' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Log an expense' }));
+    expect(screen.getByLabelText('Monthly budget')).toBeTruthy(); // prompt is back
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{"expenses":[]}').expenses).toHaveLength(0);
+    // what was typed is kept, so nothing is lost
+    expect((screen.getByLabelText('Amount') as HTMLInputElement).value).toBe('250');
+  });
+
+  it('discards a budget saved by an older version — even when categories/expenses exist — but keeps the data', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        defaultBudget: 44280,
+        budgetOverrides: { [todayKey().slice(0, 7)]: 50000 },
+        categories: [{ id: 'c1', name: 'Food', color: '#38bdf8', limit: null }],
+        expenses: [{ id: 'x', amount: 10, note: 'Tea', categoryId: 'c1', method: 'UPI', date: todayKey() }],
+      }),
+    );
+    mount();
+    expect(screen.getByLabelText('Monthly budget')).toBeTruthy(); // asks again
+    expect(screen.queryByText(/44,280|50,000/)).toBeNull(); // no trace of the old number
+    expect(within(screen.getByLabelText('Categories')).getByText('Food')).toBeTruthy(); // data kept
+    expect(within(screen.getByLabelText('Expenses this month')).getByText('Tea')).toBeTruthy();
+  });
+
+  it('keeps a budget the user chose in this version', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 2, defaultBudget: 12345 }));
+    mount();
+    expect(screen.queryByLabelText('Monthly budget')).toBeNull();
+    expect(screen.getByLabelText(/Remaining balance ₹12,345/)).toBeTruthy();
+  });
+});
+
+describe('<App /> smoke test', () => {
+  it('starts empty with onboarding and no forced categories', () => {
+    mountReady();
     expect(screen.getByLabelText('Get started')).toBeTruthy();
     expect(screen.getByText('No categories yet')).toBeTruthy();
   });
 
   it('logs an expense in a few keystrokes and updates balance + persists', async () => {
-    mount();
+    mountReady();
     // add a category from the onboarding ideas
     fireEvent.click(screen.getByRole('button', { name: /^Food$/ }));
     fireEvent.change(screen.getByLabelText('Amount'), { target: { value: '1,250.50' } });
@@ -74,7 +156,7 @@ describe('<App /> smoke test', () => {
   });
 
   it('rejects invalid amounts', () => {
-    mount();
+    mountReady();
     fireEvent.change(screen.getByLabelText('Amount'), { target: { value: 'abc' } });
     fireEvent.submit(screen.getByRole('form', { name: 'Log an expense' }));
     expect(screen.getByRole('alert').textContent).toMatch(/amount/i);
@@ -82,7 +164,7 @@ describe('<App /> smoke test', () => {
   });
 
   it('switches between 3D and Clean Compact view', async () => {
-    mount();
+    mountReady();
     fireEvent.click(screen.getByRole('radio', { name: /Compact/ }));
     expect(screen.queryByTestId('pillars-3d')).toBeNull();
     fireEvent.click(screen.getByRole('radio', { name: /3D/ }));
@@ -90,7 +172,7 @@ describe('<App /> smoke test', () => {
   });
 
   it('money-in raises the balance, and reconcile finds missing rupees', () => {
-    mount();
+    mountReady();
     fireEvent.click(screen.getByRole('button', { name: /Money in/ }));
     const dlg = screen.getByRole('dialog', { name: 'Money in' });
     fireEvent.change(within(dlg).getByLabelText('Amount (₹)'), { target: { value: '5000' } });
@@ -109,7 +191,7 @@ describe('<App /> smoke test', () => {
   });
 
   it('opens category dialog, creates a category with an optional limit, and switches months', () => {
-    mount();
+    mountReady();
     fireEvent.click(screen.getByRole('button', { name: /Make my own/ }));
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Gym' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create category' }));

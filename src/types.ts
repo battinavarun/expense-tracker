@@ -48,9 +48,13 @@ export interface Income {
 export type ViewMode = 'interactive' | 'compact';
 
 export interface AppState {
-  version: 1;
-  /** Budget used for every month without an override. */
-  defaultBudget: number;
+  /**
+   * Schema version. Budgets saved by version 1 (which pre-filled ₹44,280) are NOT trusted:
+   * loading a v1 state clears its budget so the user is asked for their own.
+   */
+  version: 2;
+  /** Budget used for every month without an override. null = the user hasn't set one yet (first run). */
+  defaultBudget: number | null;
   /** Per-month budget overrides. */
   budgetOverrides: Record<MonthKey, number>;
   /** When true, positive leftover from the previous month is added to the next month. */
@@ -61,5 +65,3 @@ export interface AppState {
   income: Income[];
   recurring: Recurring[];
 }
-
-export const DEFAULT_BUDGET = 44280;

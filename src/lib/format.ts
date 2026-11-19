@@ -13,7 +13,7 @@ const plain = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
 
 export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-/** ₹44,280 — shows paise only when they exist. */
+/** e.g. ₹44,280 — shows paise only when they exist. */
 export function formatINR(n: number): string {
   const v = Number.isFinite(n) ? round2(n) : 0;
   return Number.isInteger(v) ? inr0.format(v) : inr2.format(v);

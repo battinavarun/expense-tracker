@@ -37,6 +37,9 @@ export default function App() {
   const { state } = useStore();
   const [month, setMonth] = useState<MonthKey>(currentMonthKey);
   const [budgetOpen, setBudgetOpen] = useState(false);
+  // No budget yet (first run, or after "Erase all data") → ask for it. Skipping keeps everything at ₹0
+  // for this visit; the prompt returns next time and whenever you try to log an expense.
+  const [budgetSkipped, setBudgetSkipped] = useState(false);
   const [recurringOpen, setRecurringOpen] = useState(false);
   const [moneyInOpen, setMoneyInOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
@@ -49,6 +52,11 @@ export default function App() {
   const summary = useMemo(() => summarizeMonth(state, month, today), [state, month, today]);
   const interactive = state.viewMode === 'interactive';
   const fresh = state.categories.length === 0 && state.expenses.length === 0;
+  const askBudget = budgetOpen || (!summary.budgetSet && !budgetSkipped);
+  const closeBudget = () => {
+    setBudgetOpen(false);
+    setBudgetSkipped(true);
+  };
 
   // Coins fly off the card whenever the number of expenses goes up (a log, an undo-of-delete, a recurring apply).
   const prevCount = useRef(state.expenses.length);
@@ -56,6 +64,11 @@ export default function App() {
     if (state.expenses.length > prevCount.current) setBurst((b) => b + 1);
     prevCount.current = state.expenses.length;
   }, [state.expenses.length]);
+
+  // Once a budget exists, forget any earlier "skip" so erasing all data asks again.
+  useEffect(() => {
+    if (summary.budgetSet) setBudgetSkipped(false);
+  }, [summary.budgetSet]);
 
   // Month change: clear transient selection / edit state.
   const changeMonth = useCallback((m: MonthKey) => {
@@ -102,7 +115,14 @@ export default function App() {
           />
         </div>
 
-        {fresh && <Onboarding budget={summary.baseBudget} onCreateCategory={() => setCatTarget('new')} />}
+        {fresh && (
+          <Onboarding
+            budget={summary.baseBudget}
+            budgetSet={summary.budgetSet}
+            onSetBudget={() => setBudgetOpen(true)}
+            onCreateCategory={() => setCatTarget('new')}
+          />
+        )}
 
         <Reveal>
           <ExpenseLogger
@@ -111,6 +131,7 @@ export default function App() {
             editing={editing}
             onDoneEditing={() => setEditing(null)}
             onNewCategory={() => setCatTarget('new')}
+            onNeedBudget={() => setBudgetOpen(true)}
           />
         </Reveal>
 
@@ -149,7 +170,7 @@ export default function App() {
         Your data lives only in this browser. Use the <span className="font-semibold text-ink/80">Backup</span> menu to export a copy.
       </footer>
 
-      <BudgetEditor open={budgetOpen} month={month} onClose={() => setBudgetOpen(false)} />
+      <BudgetEditor open={askBudget} month={month} onClose={closeBudget} />
       <RecurringDrawer open={recurringOpen} month={month} onClose={() => setRecurringOpen(false)} />
       <MoneyInDialog open={moneyInOpen} month={month} summary={summary} onClose={() => setMoneyInOpen(false)} />
       <ReconcileDialog open={reconcileOpen} month={month} summary={summary} onClose={() => setReconcileOpen(false)} />

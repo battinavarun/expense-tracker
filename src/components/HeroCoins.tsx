@@ -87,7 +87,7 @@ function Coins({ accent, ratio, burst }: Props) {
     return Array.from({ length: MAX }, (_, i) => ({
       phase: (i / MAX) * Math.PI * 2 + r() * 0.35,
       speed: 0.05 + r() * 0.09,
-      rad: 0.86 + r() * 0.18,
+      rad: 0.84 + r() * 0.11, // hugs the card's rim: half hidden behind it, half peeking out (and never clipped by the canvas)
       z: -1.8 + r() * 3.6,
       size: 0.5 + r() * 0.55,
       spin: 0.4 + r() * 1.1,

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BarChart3, Box, CalendarDays, Disc3, MousePointerClick } from 'lucide-react';
 import type { CategoryStat, DayPoint, MonthSummary } from '../lib/calc';
-import { CORAL, healthColor } from '../lib/colors';
+import { CORAL } from '../lib/colors';
 import { formatDayLong } from '../lib/dates';
 import { formatINR, formatPercent } from '../lib/format';
 import { statKey } from '../lib/keys';
@@ -74,7 +74,7 @@ export function CategoryViz({ summary, viewMode, selectedKey, onSelect }: Props)
                   stats={summary.stats}
                   available={summary.available}
                   remaining={summary.remaining}
-                  accent={healthColor(summary.ratio)}
+                  accent={summary.accent}
                   days={summary.days}
                   pace={summary.insights.pace}
                   selectedKey={selectedKey}

@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "A tactile 3D monthly expense tracker for a ₹44,280 monthly budget",
+  "description": "A tactile 3D monthly expense tracker where you set your own monthly budget",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

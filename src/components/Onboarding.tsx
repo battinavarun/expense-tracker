@@ -9,11 +9,13 @@ const IDEAS = ['PG / Rent', 'Food', 'UPI Misc', 'Travel', 'Savings'];
 
 interface Props {
   budget: number;
+  budgetSet: boolean;
+  onSetBudget: () => void;
   onCreateCategory: () => void;
 }
 
 /** Shown only on a completely fresh start. Nothing is pre-created or pre-allocated. */
-export function Onboarding({ budget, onCreateCategory }: Props) {
+export function Onboarding({ budget, budgetSet, onSetBudget, onCreateCategory }: Props) {
   const { state, dispatch } = useStore();
   const [added, setAdded] = useState<Set<string>>(new Set());
 
@@ -37,7 +39,7 @@ export function Onboarding({ budget, onCreateCategory }: Props) {
           <Sparkles size={14} /> Welcome
         </p>
         <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
-          Your {formatINRWhole(budget)} is ready. Spend it your way.
+          {budgetSet ? `Your ${formatINRWhole(budget)} is ready. Spend it your way.` : 'Everything starts at ₹0. Set your budget to begin.'}
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-mute">
           There are no preset percentages or buckets. Log expenses straight against your balance, or build your own categories — with a
@@ -61,17 +63,23 @@ export function Onboarding({ budget, onCreateCategory }: Props) {
         </div>
 
         <div className="mt-5">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => {
-              const el = document.getElementById('amount-input');
-              el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              el?.focus({ preventScroll: true });
-            }}
-          >
-            Log my first expense
-          </button>
+          {budgetSet ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                const el = document.getElementById('amount-input');
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el?.focus({ preventScroll: true });
+              }}
+            >
+              Log my first expense
+            </button>
+          ) : (
+            <button type="button" className="btn btn-primary" onClick={onSetBudget}>
+              Set my monthly budget
+            </button>
+          )}
         </div>
       </div>
     </motion.section>

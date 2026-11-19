@@ -2,7 +2,6 @@ import { lazy, Suspense, useRef } from 'react';
 import { motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring } from 'framer-motion';
 import { Pencil, Wifi } from 'lucide-react';
 import type { MonthSummary } from '../lib/calc';
-import { healthColor, healthLabel } from '../lib/colors';
 import { formatINR, formatINRWhole } from '../lib/format';
 import { monthLabel } from '../lib/dates';
 import { AnimatedNumber } from './AnimatedNumber';
@@ -35,8 +34,8 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
   const gy = useMotionValue(20);
   const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.36), rgba(255,255,255,0.07) 32%, transparent 55%)`;
 
-  const accent = healthColor(summary.ratio);
-  const status = healthLabel(summary.ratio, summary.over);
+  const accent = summary.accent;
+  const status = summary.status;
   const usedRatio = summary.available > 0 ? Math.min(1, summary.spent / summary.available) : summary.spent > 0 ? 1 : 0;
 
   const move = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -57,9 +56,10 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
   };
 
   return (
-    <div className={`relative w-full ${interactive ? 'py-2' : ''}`}>
+    <div className={`relative w-full ${interactive ? 'py-6' : ''}`}>
       {interactive && (
-        <div className="pointer-events-none absolute -inset-x-3 -inset-y-9 z-30" aria-hidden>
+        // Behind the card (z-0 vs the card's z-10): coins peek out around the edges but can never cover the text.
+        <div className="pointer-events-none absolute -inset-x-10 -inset-y-4 z-0" aria-hidden>
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>
               <HeroCoins accent={accent} ratio={summary.ratio} burst={burst} />
@@ -68,7 +68,7 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
         </div>
       )}
 
-      <div style={{ perspective: interactive ? 1100 : undefined }} className="w-full">
+      <div style={{ perspective: interactive ? 1100 : undefined }} className="relative z-10 w-full">
         <motion.div
           ref={ref}
           onPointerMove={move}
@@ -133,7 +133,7 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
 
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
-                  {summary.over ? 'Over budget by' : 'Remaining balance'}
+                  {summary.over && summary.budgetSet ? 'Over budget by' : 'Remaining balance'}
                 </p>
                 <p
                   className="tabular mt-1 font-mono text-[clamp(1.9rem,6.5vw,3rem)] font-bold leading-none text-white"
@@ -162,6 +162,7 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
                     aria-label="Edit monthly budget"
                   >
                     <span>
+                      {!summary.budgetSet && <strong className="text-white">Tap to set your monthly budget · </strong>}
                       Budget <strong className="tabular font-mono text-white">{formatINRWhole(summary.available)}</strong>
                       {(summary.carried > 0 || summary.income > 0) && (
                         <span className="text-white/50">

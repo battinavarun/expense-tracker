@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { summarizeMonth } from './calc';
-import { buildCSV, csvCell, emptyState, sanitizeState } from './storage';
+import { buildCSV, csvCell, emptyState as rawEmptyState, sanitizeState } from './storage';
 import { daysInMonth, isValidDateKey, shiftMonth } from './dates';
 import { parseAmount, formatINR } from './format';
 import { reducer } from '../store/store';
 import type { AppState } from '../types';
+
+// The app has no built-in budget; these tests simulate a user who chose ₹44,280.
+const emptyState = (): AppState => ({ ...rawEmptyState(), defaultBudget: 44280 });
 
 type Row = [date: string, amount: number, categoryId?: string | null];
 
@@ -207,12 +210,13 @@ describe('import / export safety', () => {
       ],
       recurring: [{ amount: 10, note: 'x', dayOfMonth: 99 }],
     });
-    expect(s.defaultBudget).toBe(44280);
+    expect(s.defaultBudget).toBeNull(); // an invalid budget is "not set", never silently replaced by a default
     expect(s.categories).toEqual([{ id: 'a', name: 'Food', color: '#38bdf8', limit: null }]);
     expect(s.expenses).toHaveLength(1);
     expect(s.expenses[0]).toMatchObject({ categoryId: null, method: 'UPI' });
     expect(s.recurring[0].dayOfMonth).toBe(1);
-    expect(sanitizeState('garbage')).toEqual(emptyState());
+    expect(sanitizeState('garbage')).toEqual(rawEmptyState());
+    expect(rawEmptyState().defaultBudget).toBeNull();
   });
 
   it('round-trips through JSON', () => {

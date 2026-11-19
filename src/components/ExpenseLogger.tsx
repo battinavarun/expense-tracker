@@ -15,6 +15,8 @@ interface Props {
   editing: Expense | null;
   onDoneEditing: () => void;
   onNewCategory: () => void;
+  /** Called instead of logging when no budget has been set yet. */
+  onNeedBudget: () => void;
 }
 
 const METHOD_ICON: Record<PaymentMethod, JSX.Element> = {
@@ -28,7 +30,7 @@ function defaultDate(month: MonthKey) {
   return monthOf(t) === month ? t : `${month}-01`;
 }
 
-export function ExpenseLogger({ month, summary, editing, onDoneEditing, onNewCategory }: Props) {
+export function ExpenseLogger({ month, summary, editing, onDoneEditing, onNewCategory, onNeedBudget }: Props) {
   const { state, dispatch } = useStore();
   const toast = useToast();
   const amountRef = useRef<HTMLInputElement>(null);
@@ -117,6 +119,12 @@ export function ExpenseLogger({ month, summary, editing, onDoneEditing, onNewCat
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Nothing is logged against a budget that doesn't exist yet — ask for it first (your typing is kept).
+    if (!summary.budgetSet && !editing) {
+      toast('Set your monthly budget first — then your expense will be logged against it.', { tone: 'warn' });
+      onNeedBudget();
+      return;
+    }
     const value = parseAmount(amount);
     if (value === null) {
       setError('Enter an amount above ₹0 (up to 2 decimals).');
