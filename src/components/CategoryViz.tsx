@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { BarChart3, Box, CalendarDays, Disc3, MousePointerClick } from 'lucide-react';
+import { BarChart3, Box, CalendarDays, ChevronLeft, ChevronRight, Disc3, MousePointerClick } from 'lucide-react';
 import type { CategoryStat, DayPoint, MonthSummary } from '../lib/calc';
 import { CORAL } from '../lib/colors';
 import { formatDayLong } from '../lib/dates';
@@ -84,15 +84,18 @@ export function CategoryViz({ summary, viewMode, selectedKey, onSelect }: Props)
                 />
               </Suspense>
             </ErrorBoundary>
-            <span className="pointer-events-none absolute bottom-2 left-3 flex items-center gap-1.5 text-[11px] text-mute">
+            <span className="pointer-events-none absolute left-3 top-2.5 z-10 flex items-center gap-1.5 text-[11px] text-mute">
               <MousePointerClick size={12} /> drag to rotate · {hint}
             </span>
             {summary.stats.length === 0 && mode !== 'timeline' && (
-              <div className="pointer-events-none absolute inset-x-0 top-4 text-center text-xs text-mute">
+              <div className="pointer-events-none absolute inset-x-4 bottom-4 text-center text-xs text-mute">
                 Create a category and log an expense — the chart grows as you spend.
               </div>
             )}
           </div>
+          {mode === 'timeline' && (
+            <DayPicker days={summary.days} selected={selectedDay} onChange={setSelectedDay} />
+          )}
           {mode !== 'timeline' && summary.stats.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Select a pillar">
               {summary.stats.map((s) => {
@@ -124,6 +127,35 @@ export function CategoryViz({ summary, viewMode, selectedKey, onSelect }: Props)
         <Inspector stat={selected} available={summary.available} />
       )}
     </section>
+  );
+}
+
+/** Thin bars are hard to tap on a phone, so days can also be picked with a slider or the arrow buttons. */
+function DayPicker({ days, selected, onChange }: { days: DayPoint[]; selected: number | null; onChange: (d: number | null) => void }) {
+  const fallback = days.find((d) => d.isToday)?.day ?? 1;
+  const value = selected ?? fallback;
+  const step = (delta: number) => onChange(Math.min(days.length, Math.max(1, value + delta)));
+  return (
+    <div className="mt-3 flex items-center gap-2" role="group" aria-label="Pick a day">
+      <button type="button" className="btn btn-icon btn-sm shrink-0" aria-label="Previous day" onClick={() => step(-1)} disabled={selected !== null && value <= 1}>
+        <ChevronLeft size={16} />
+      </button>
+      <input
+        type="range"
+        min={1}
+        max={days.length}
+        step={1}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-label="Day of month"
+        aria-valuetext={selected === null ? 'No day selected' : `Day ${value}`}
+        className="h-8 min-w-0 flex-1 cursor-pointer accent-emerald-400"
+      />
+      <button type="button" className="btn btn-icon btn-sm shrink-0" aria-label="Next day" onClick={() => step(1)} disabled={value >= days.length}>
+        <ChevronRight size={16} />
+      </button>
+      <span className="tabular w-14 shrink-0 text-right font-mono text-xs text-mute">{selected === null ? 'Day –' : `Day ${value}`}</span>
+    </div>
   );
 }
 

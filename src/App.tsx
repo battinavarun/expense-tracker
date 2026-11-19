@@ -94,7 +94,7 @@ export default function App() {
   }, [state.expenses, editing]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[1180px] px-4 pb-24 pt-5 sm:px-6 sm:pt-8">
+    <div className="relative mx-auto w-full max-w-[1180px] pb-[max(6rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-5 sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-8">
       <div className="orbs" aria-hidden>
         <span className="orb orb-a" />
         <span className="orb orb-b" />
@@ -105,7 +105,7 @@ export default function App() {
 
       <main className="relative mt-6 space-y-5 sm:mt-8 sm:space-y-6">
         {/* Hero: tiltable salary card (+ floating coins) and live numbers */}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,490px)_1fr] lg:gap-8">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,490px)_minmax(0,1fr)] lg:gap-8">
           <SalaryCard summary={summary} interactive={interactive} burst={burst} onEditBudget={() => setBudgetOpen(true)} />
           <StatsRow
             summary={summary}
@@ -135,7 +135,7 @@ export default function App() {
           />
         </Reveal>
 
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-6">
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-6">
           <Reveal i={1}>
             <CategoryViz summary={summary} viewMode={state.viewMode} selectedKey={selectedKey} onSelect={setSelectedKey} />
           </Reveal>

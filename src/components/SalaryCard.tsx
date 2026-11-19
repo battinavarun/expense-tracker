@@ -56,10 +56,12 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
   };
 
   return (
-    <div className={`relative w-full ${interactive ? 'py-6' : ''}`}>
+    // max-w keeps the card credit-card-sized on tablets instead of stretching across the whole screen.
+    <div className={`relative mx-auto w-full max-w-[520px] lg:mx-0 ${interactive ? 'py-6' : ''}`}>
       {interactive && (
         // Behind the card (z-0 vs the card's z-10): coins peek out around the edges but can never cover the text.
-        <div className="pointer-events-none absolute -inset-x-10 -inset-y-4 z-0" aria-hidden>
+        // Inset is narrower on phones so the layer never extends past the screen edge.
+        <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 z-0 sm:-inset-x-10" aria-hidden>
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>
               <HeroCoins accent={accent} ratio={summary.ratio} burst={burst} />
@@ -81,7 +83,7 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
             transformStyle: 'preserve-3d',
             touchAction: 'pan-y',
           }}
-          className={`relative w-full select-none ${interactive ? 'aspect-[1.72/1] min-h-[215px]' : 'min-h-[200px]'}`}
+          className={`relative w-full select-none ${interactive ? 'aspect-[1.72/1] min-h-[225px]' : 'min-h-[205px]'}`}
         >
           {/* slab thickness: stacked darker layers behind the face give the card a real edge when tilted */}
           {tilt &&
@@ -113,9 +115,11 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
             </div>
 
             <div className="relative flex h-full flex-col justify-between" style={{ transform: tilt ? 'translateZ(28px)' : undefined }}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/60">Rupee Vault · Salary</p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 sm:tracking-[0.28em]">
+                    Rupee Vault<span className="hidden min-[400px]:inline"> · Salary</span>
+                  </p>
                   <div className="mt-3 flex items-center gap-3">
                     <div className="h-7 w-10 rounded-md bg-gradient-to-br from-amber-200/90 via-amber-400/70 to-amber-700/80 shadow-inner" aria-hidden>
                       <div className="m-[3px] h-[calc(100%-6px)] w-[calc(100%-6px)] rounded-[4px] border border-black/25" />
@@ -124,7 +128,7 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
                   </div>
                 </div>
                 <span
-                  className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
+                  className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider sm:px-3 sm:text-[11px]"
                   style={{ color: accent, background: `${accent}22`, boxShadow: `inset 0 0 0 1px ${accent}66, 0 0 14px ${accent}33` }}
                 >
                   {status}
@@ -154,26 +158,28 @@ export function SalaryCard({ summary, interactive, burst, onEditBudget }: Props)
                     transition={{ type: 'spring', stiffness: 120, damping: 20 }}
                   />
                 </div>
-                <div className="flex items-end justify-between gap-3 text-xs text-white/70">
+                <div className="flex items-end justify-between gap-2 text-xs text-white/70">
                   <button
                     type="button"
                     onClick={onEditBudget}
-                    className="group -ml-1.5 inline-flex items-center gap-1.5 rounded-lg px-1.5 py-1 text-left hover:bg-white/10"
+                    className="group -ml-1.5 inline-flex min-h-[32px] min-w-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-left hover:bg-white/10"
                     aria-label="Edit monthly budget"
                   >
-                    <span>
-                      {!summary.budgetSet && <strong className="text-white">Tap to set your monthly budget · </strong>}
+                    <span className="min-w-0 truncate">
+                      {!summary.budgetSet && <strong className="text-white">Set budget · </strong>}
                       Budget <strong className="tabular font-mono text-white">{formatINRWhole(summary.available)}</strong>
                       {(summary.carried > 0 || summary.income > 0) && (
-                        <span className="text-white/50">
+                        <span className="hidden text-white/50 min-[420px]:inline">
                           {' '}
                           (incl. {formatINRWhole(summary.carried + summary.income)} extra)
                         </span>
                       )}
                     </span>
-                    <Pencil size={12} className="opacity-60 group-hover:opacity-100" />
+                    <Pencil size={12} className="shrink-0 opacity-60 group-hover:opacity-100" />
                   </button>
-                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60">{monthLabel(summary.month)}</span>
+                  <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 sm:text-[11px] sm:tracking-[0.2em]">
+                    {monthLabel(summary.month)}
+                  </span>
                 </div>
               </div>
             </div>

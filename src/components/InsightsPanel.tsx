@@ -118,7 +118,7 @@ export function InsightsPanel({ summary }: { summary: MonthSummary }) {
                   const peak = v > 0 && v === maxWd;
                   return (
                     <div key={WEEKDAYS[i]} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
-                      <span className="tabular font-mono text-[10px] text-mute">{v > 0 ? formatCompact(v) : ''}</span>
+                      <span className="tabular whitespace-nowrap font-mono text-[9px] text-mute sm:text-[10px]">{v > 0 ? formatCompact(v) : ''}</span>
                       <motion.div
                         className="w-full rounded-t-lg"
                         initial={{ height: 0 }}
@@ -176,11 +176,14 @@ export function InsightsPanel({ summary }: { summary: MonthSummary }) {
 
 function Mini({ label, value, sub, dot }: { label: string; value: string; sub: string; dot?: string }) {
   return (
-    <div className="neo-sm lift p-3.5">
+    <div className="neo-sm lift min-w-0 p-3 sm:p-3.5">
       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-mute">{label}</p>
-      <p className="mt-1 flex items-center gap-2 truncate font-mono text-base font-bold">
+      <p className="mt-1 flex items-center gap-2 font-mono text-sm font-bold sm:text-base">
         {dot && <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: dot, boxShadow: `0 0 8px ${dot}` }} />}
-        <span className="truncate">{value}</span>
+        {/* names may be clipped with "…"; money is never clipped, it wraps */}
+        <span className="min-w-0 break-words" title={value}>
+          {value}
+        </span>
       </p>
       <p className="mt-0.5 truncate text-[11px] text-mute">{sub}</p>
     </div>

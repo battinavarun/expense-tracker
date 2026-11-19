@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       <div
-        className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex flex-col items-center gap-2 px-4"
+        className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[60] flex flex-col items-center gap-2 px-4"
         aria-live="polite"
         role="status"
       >
@@ -53,7 +53,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 12, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-              className="neo-sm pointer-events-auto flex max-w-md items-center gap-3 px-4 py-3 text-sm"
+              className="neo-sm pointer-events-auto flex w-full max-w-md items-center gap-3 px-4 py-3 text-sm sm:w-auto"
             >
               <span className={`h-2 w-2 shrink-0 rounded-full ${dot[t.tone]}`} />
               <span className="min-w-0 flex-1">{t.message}</span>

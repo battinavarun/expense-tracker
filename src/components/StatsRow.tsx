@@ -174,16 +174,13 @@ function Tile({
         </span>
         {label}
       </div>
-      <div
-        className="tabular truncate font-mono text-[clamp(1.2rem,3.2vw,1.65rem)] font-bold leading-tight"
-        style={{ color: valueColor, transition: 'color .5s ease' }}
-      >
+      <div className="tile-value tabular font-mono font-bold" style={{ color: valueColor, transition: 'color .5s ease' }}>
         {children}
       </div>
       <p className="mt-1 text-xs text-mute">{sub}</p>
     </>
   );
-  const cls = 'neo-sm lift relative block w-full p-4 text-left';
+  const cls = 'neo-sm lift tile-box relative block w-full min-w-0 p-3.5 text-left sm:p-4';
   return onClick ? (
     <motion.button type="button" whileTap={{ scale: 0.98 }} className={`${cls} tile-btn`} onClick={onClick}>
       {body}

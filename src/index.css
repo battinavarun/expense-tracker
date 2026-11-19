@@ -18,6 +18,12 @@ body,
   min-height: 100%;
 }
 
+html {
+  /* Stop mobile browsers inflating text when the phone is rotated. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   background:
@@ -81,9 +87,12 @@ body {
       filter 0.15s ease;
     touch-action: manipulation;
   }
-  .btn:hover {
-    filter: brightness(1.1);
-    transform: translateY(-2px);
+  /* Hover lift only where a real pointer exists — on phones it would "stick" after a tap. */
+  @media (hover: hover) {
+    .btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
   }
   .btn:active,
   .btn[data-pressed='true'] {
@@ -293,6 +302,47 @@ body {
   }
   100% {
     left: 130%;
+  }
+}
+
+/* Stat-tile numbers shrink to fit their tile instead of being cut off with "…" (hiding digits would be a bug). */
+.tile-box {
+  container-type: inline-size;
+}
+.tile-value {
+  font-size: clamp(1rem, 4.4vw, 1.65rem); /* fallback for browsers without container units */
+  font-size: clamp(1rem, 9.5cqw, 1.65rem);
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+/* ---- Phones & touch ------------------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  /* iOS Safari zooms the whole page when focusing any input under 16px. */
+  input.field,
+  select.field,
+  textarea.field {
+    font-size: 16px !important;
+  }
+  /* Big blurred, animated layers are costly on phone GPUs: keep the glow, drop the motion and the blur radius. */
+  .orb {
+    filter: blur(48px);
+    animation: none;
+  }
+}
+@media (max-width: 1024px) {
+  /* `fixed` backgrounds repaint on every scroll frame on mobile browsers (and iOS ignores them). */
+  body {
+    background-attachment: scroll;
+  }
+}
+/* Comfortable tap targets for touch screens. */
+@media (pointer: coarse) {
+  .chip {
+    min-height: 40px;
+  }
+  .btn-sm {
+    min-height: 40px;
   }
 }
 

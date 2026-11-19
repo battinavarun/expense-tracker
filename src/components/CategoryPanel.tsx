@@ -66,12 +66,14 @@ export function CategoryPanel({ stats, selectedKey, onSelect, onAdd, onEdit }: P
                   aria-pressed={selected}
                   onClick={() => onSelect(selected ? null : key)}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
+                    <span className="flex min-w-0 flex-1 basis-[6.5rem] items-center gap-2 text-sm font-semibold">
                       <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: s.color, boxShadow: `0 0 8px ${s.color}88` }} />
-                      <span className="truncate">{s.name}</span>
+                      <span className="truncate" title={s.name}>
+                        {s.name}
+                      </span>
                     </span>
-                    <span className="tabular shrink-0 font-mono text-xs" style={{ color: over ? CORAL : undefined }}>
+                    <span className="tabular shrink-0 whitespace-nowrap font-mono text-xs" style={{ color: over ? CORAL : undefined }}>
                       {formatINR(s.spent)}
                       {s.limit ? <span className="text-mute"> / {formatINRWhole(s.limit)}</span> : null}
                     </span>
@@ -96,7 +98,7 @@ export function CategoryPanel({ stats, selectedKey, onSelect, onAdd, onEdit }: P
                   <div className="flex shrink-0 flex-col">
                     <button
                       type="button"
-                      className="rounded-lg p-1.5 text-mute hover:bg-white/5 hover:text-ink"
+                      className="rounded-lg p-2.5 text-mute hover:bg-white/5 hover:text-ink sm:p-1.5"
                       aria-label={`Edit ${s.name}`}
                       onClick={() => onEdit(s.id as string)}
                     >
@@ -104,7 +106,7 @@ export function CategoryPanel({ stats, selectedKey, onSelect, onAdd, onEdit }: P
                     </button>
                     <button
                       type="button"
-                      className="rounded-lg p-1.5 text-mute hover:bg-white/5 hover:text-red-300"
+                      className="rounded-lg p-2.5 text-mute hover:bg-white/5 hover:text-red-300 sm:p-1.5"
                       aria-label={`Delete ${s.name}`}
                       onClick={() => remove(s)}
                     >

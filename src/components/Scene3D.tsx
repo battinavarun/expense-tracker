@@ -85,6 +85,21 @@ export default function Scene3D(props: Props) {
   );
 }
 
+/**
+ * World-space width that is actually visible at the chart's distance from the camera.
+ * A portrait phone canvas is far narrower than a desktop one, so charts must scale to this
+ * instead of assuming a fixed width (otherwise outer pillars/days are cut off).
+ */
+function useVisibleWidth(mode: VizMode): number {
+  const size = useThree((s) => s.size);
+  const fov = useThree((s) => (s.camera as THREE.PerspectiveCamera).fov);
+  const [cx, cy, cz] = CAMERA[mode];
+  const [tx, ty, tz] = TARGET[mode];
+  const dist = Math.hypot(cx - tx, cy - ty, cz - tz);
+  const aspect = size.width / Math.max(1, size.height);
+  return 2 * dist * Math.tan((fov * Math.PI) / 360) * aspect * 0.9; // 10 % margin
+}
+
 /** Snaps the camera to a good angle for each chart type when the mode changes. */
 function CameraRig({ mode }: { mode: VizMode }) {
   const camera = useThree((s) => s.camera);
@@ -170,7 +185,7 @@ function Pillars({ stats, available, selectedKey, onSelect }: Props) {
   const spacing = n > 8 ? 1.05 : 1.35;
   const radius = n > 8 ? 0.36 : 0.46;
   const totalWidth = Math.max(1, (n - 1) * spacing + radius * 3);
-  const fit = Math.min(1, 8.2 / totalWidth);
+  const fit = Math.min(1, useVisibleWidth('pillars') / totalWidth);
 
   return (
     <group scale={fit}>
@@ -351,8 +366,10 @@ function Ring({ stats, available, remaining, accent, selectedKey, onSelect }: Pr
     segs.push({ key: '__left__', a0: cursor - span + GAP / 2, a1: cursor - GAP / 2, color: accent, stat: null });
   }
 
+  const ringFit = Math.min(1, useVisibleWidth('ring') / ((R_OUT + 0.7) * 2));
+
   return (
-    <group>
+    <group scale={ringFit}>
       <Floor radius={5.2} />
       {/* podium disc */}
       <mesh position={[0, 0.02, 0]}>
@@ -488,7 +505,7 @@ function Timeline({ days, pace, accent, selectedDay, onSelectDay }: Props) {
   const per = (v: number) => (v / scaleMax) * H_T;
   const n = days.length;
   const width = (n - 1) * DAY_STEP;
-  const fit = Math.min(1, 8.6 / (width + 1));
+  const fit = Math.min(1, useVisibleWidth('timeline') / (width + 2.4)); // +2.4: base slab overhang and the "₹/day" tag
   const paceY = per(pace);
 
   return (

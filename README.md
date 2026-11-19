@@ -34,6 +34,9 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
+**Try it on your phone** (same Wi-Fi): run `npm run dev -- --host`, then open the `Network:` URL it prints on your phone.
+Or in desktop Chrome/Edge press `F12` → `Ctrl+Shift+M` and pick a device (360×800, 390×844, iPad) to check the responsive layout.
+
 Other scripts:
 
 ```bash

@@ -57,21 +57,23 @@ export function Modal({ open, onClose, title, children, variant = 'center' }: Mo
             aria-modal="true"
             aria-label={title}
             tabIndex={-1}
-            className={`neo relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden outline-none ${
-              isDrawer ? 'h-full max-w-md rounded-r-none sm:rounded-[22px]' : 'max-w-lg rounded-b-none sm:rounded-b-[22px]'
+            className={`neo relative z-10 flex w-full flex-col overflow-hidden outline-none ${
+              isDrawer
+                ? 'h-full max-h-full max-w-md rounded-none sm:h-auto sm:max-h-[92dvh] sm:self-center sm:rounded-[22px]'
+                : 'max-h-[92dvh] max-w-lg rounded-b-none sm:rounded-b-[22px]'
             }`}
             initial={isDrawer ? { x: 60, opacity: 0 } : { y: 40, opacity: 0, scale: 0.98 }}
             animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
             exit={isDrawer ? { x: 60, opacity: 0 } : { y: 40, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
           >
-            <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-5">
-              <h2 className="text-lg font-bold tracking-tight">{title}</h2>
-              <button type="button" data-close className="btn btn-icon" onClick={onClose} aria-label="Close">
+            <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
+              <h2 className="min-w-0 text-lg font-bold leading-snug tracking-tight">{title}</h2>
+              <button type="button" data-close className="btn btn-icon shrink-0" onClick={onClose} aria-label="Close">
                 <X size={16} />
               </button>
             </div>
-            <div className="overflow-y-auto px-5 pb-6">{children}</div>
+            <div className="overflow-y-auto overscroll-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5">{children}</div>
           </motion.div>
         </motion.div>
       )}

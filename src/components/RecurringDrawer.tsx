@@ -83,14 +83,14 @@ export function RecurringDrawer({ open, month, onClose }: Props) {
           {state.recurring.map((r) => {
             const applied = appliedIds.has(r.id);
             return (
-              <li key={r.id} className="neo-sm flex items-center gap-3 p-3">
-                <div className="min-w-0 flex-1">
+              <li key={r.id} className="neo-sm flex flex-wrap items-center gap-x-3 gap-y-2 p-3">
+                <div className="min-w-0 flex-1 basis-[7rem]">
                   <p className="truncate text-sm font-semibold">{r.note}</p>
                   <p className="truncate text-xs text-mute">
                     {catName(r.categoryId)} · {r.method} · day {r.dayOfMonth}
                   </p>
                 </div>
-                <span className="tabular font-mono text-sm font-bold">{formatINR(r.amount)}</span>
+                <span className="tabular whitespace-nowrap font-mono text-sm font-bold">{formatINR(r.amount)}</span>
                 {applied ? (
                   <span className="flex items-center gap-1 text-xs text-emerald-300" title="Already added this month">
                     <CheckCircle2 size={16} /> Added
@@ -109,7 +109,7 @@ export function RecurringDrawer({ open, month, onClose }: Props) {
                 )}
                 <button
                   type="button"
-                  className="rounded-lg p-2 text-mute hover:bg-white/5 hover:text-red-300"
+                  className="rounded-lg p-2.5 text-mute hover:bg-white/5 hover:text-red-300 sm:p-2"
                   aria-label={`Delete ${r.note}`}
                   onClick={() => dispatch({ type: 'DELETE_RECURRING', id: r.id })}
                 >
@@ -139,8 +139,8 @@ export function RecurringDrawer({ open, month, onClose }: Props) {
             <input id="rec-note" className="field" placeholder="PG rent, Wi-Fi…" value={note} maxLength={120} onChange={(e) => setNote(e.target.value)} />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="col-span-2 sm:col-span-1">
             <label className="label" htmlFor="rec-cat">
               Category
             </label>

@@ -124,7 +124,7 @@ export function MoneyInDialog({ open, month, summary, onClose }: { open: boolean
                 <span className="tabular font-mono text-sm font-bold text-emerald-300">+{formatINR(i.amount)}</span>
                 <button
                   type="button"
-                  className="rounded-lg p-2 text-mute hover:bg-white/5 hover:text-red-300"
+                  className="rounded-lg p-2.5 text-mute hover:bg-white/5 hover:text-red-300 sm:p-2"
                   aria-label={`Delete ${i.note}`}
                   onClick={() => {
                     dispatch({ type: 'DELETE_INCOME', id: i.id });

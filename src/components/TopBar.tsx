@@ -28,20 +28,21 @@ interface TopBarProps {
 
 export function TopBar({ month, onMonthChange, onOpenRecurring }: TopBarProps) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <div className="neo-sm flex h-11 w-11 items-center justify-center text-lg font-extrabold text-emerald-300">₹</div>
-        <div className="leading-tight">
-          <h1 className="text-gradient text-xl font-extrabold tracking-tight">Rupee Vault</h1>
-          <p className="text-xs text-mute">Monthly expense tracker</p>
+    // Phones: row 1 = logo + controls, row 2 = month switcher. Wider screens: everything on one line.
+    <header className="flex flex-wrap items-center gap-x-3 gap-y-4">
+      <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+        <div className="neo-sm flex h-10 w-10 shrink-0 items-center justify-center text-lg font-extrabold text-emerald-300 sm:h-11 sm:w-11">₹</div>
+        <div className="min-w-0 leading-tight">
+          <h1 className="text-gradient truncate text-lg font-extrabold tracking-tight sm:text-xl">Rupee Vault</h1>
+          <p className="hidden text-xs text-mute min-[400px]:block">Monthly expense tracker</p>
         </div>
       </div>
 
-      <div className="order-3 flex w-full justify-center sm:order-none sm:w-auto">
+      <div className="order-3 w-full sm:order-none sm:ml-auto sm:w-auto">
         <MonthSwitcher month={month} onChange={onMonthChange} />
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:ml-0 sm:gap-2">
         <ViewToggle />
         <button type="button" className="btn btn-icon" onClick={onOpenRecurring} aria-label="Recurring expenses" title="Recurring expenses">
           <Repeat size={18} />
@@ -55,19 +56,21 @@ export function TopBar({ month, onMonthChange, onOpenRecurring }: TopBarProps) {
 function MonthSwitcher({ month, onChange }: { month: MonthKey; onChange: (m: MonthKey) => void }) {
   const isCurrent = month === currentMonthKey();
   return (
-    <div className="flex items-center gap-2">
-      <button type="button" className="btn btn-icon" onClick={() => onChange(shiftMonth(month, -1))} aria-label="Previous month">
+    <div className="flex w-full items-center gap-2 sm:w-auto">
+      <button type="button" className="btn btn-icon shrink-0" onClick={() => onChange(shiftMonth(month, -1))} aria-label="Previous month">
         <ChevronLeft size={18} />
       </button>
-      <div className="neo-inset flex min-w-[10.5rem] items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold">
-        <CalendarDays size={15} className="text-mute" />
-        <span aria-live="polite">{monthLabel(month, 'long')}</span>
+      <div className="neo-inset flex min-w-0 flex-1 items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold sm:min-w-[10.5rem] sm:flex-none sm:px-4">
+        <CalendarDays size={15} className="shrink-0 text-mute" />
+        <span className="truncate" aria-live="polite">
+          {monthLabel(month, 'long')}
+        </span>
       </div>
-      <button type="button" className="btn btn-icon" onClick={() => onChange(shiftMonth(month, 1))} aria-label="Next month">
+      <button type="button" className="btn btn-icon shrink-0" onClick={() => onChange(shiftMonth(month, 1))} aria-label="Next month">
         <ChevronRight size={18} />
       </button>
       {!isCurrent && (
-        <button type="button" className="btn btn-sm" onClick={() => onChange(currentMonthKey())}>
+        <button type="button" className="btn btn-sm shrink-0" onClick={() => onChange(currentMonthKey())}>
           Today
         </button>
       )}
@@ -83,7 +86,7 @@ function ViewToggle() {
       type="button"
       role="radio"
       aria-checked={state.viewMode === value}
-      className="chip !rounded-xl !px-3 !py-2 text-xs"
+      className="chip !rounded-xl !px-2.5 !py-2 text-xs sm:!px-3"
       onClick={() => set(value)}
       title={label}
     >
@@ -143,7 +146,7 @@ function DataMenu({ month }: { month: MonthKey }) {
         {!persisted && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-red-400" />}
       </button>
       {open && (
-        <div role="menu" className="neo absolute right-0 z-40 mt-2 w-72 p-2">
+        <div role="menu" className="neo absolute right-0 z-40 mt-2 w-[min(18rem,calc(100vw-2rem))] p-2">
           {!persisted && (
             <p className="mb-1 rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-300">
               Your browser is blocking storage — changes will be lost on refresh. Export a backup now.

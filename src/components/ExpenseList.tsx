@@ -147,18 +147,25 @@ export function ExpenseList({ summary, editingId, onEdit }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -24 }}
                         transition={{ duration: 0.2 }}
-                        className={`neo-sm flex items-center gap-3 px-3 py-2.5 sm:px-4 ${editingId === e.id ? 'ring-2 ring-emerald-400/60' : ''}`}
+                        // Phone: [bar | note + meta | amount] with the action buttons on a second row.  ≥ sm: one line.
+                        className={`neo-sm grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 px-3 py-2.5 sm:flex sm:gap-3 sm:px-4 ${editingId === e.id ? 'ring-2 ring-emerald-400/60' : ''}`}
                       >
-                        <span className="h-9 w-1.5 shrink-0 rounded-full" style={{ background: color, boxShadow: `0 0 10px ${color}66` }} aria-hidden />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold">{e.note || cat?.name || 'Expense'}</p>
+                        <span
+                          className="row-span-2 min-h-[2.25rem] w-1.5 self-stretch rounded-full sm:row-span-1 sm:h-9 sm:shrink-0 sm:self-auto"
+                          style={{ background: color, boxShadow: `0 0 10px ${color}66` }}
+                          aria-hidden
+                        />
+                        <div className="min-w-0 sm:flex-1">
+                          <p className="truncate text-sm font-semibold" title={e.note || cat?.name}>
+                            {e.note || cat?.name || 'Expense'}
+                          </p>
                           <p className="truncate text-xs text-mute">
                             {cat?.name ?? 'Uncategorized'} · {e.method}
                             {e.recurringId && ' · recurring'}
                           </p>
                         </div>
-                        <p className="tabular shrink-0 font-mono text-sm font-bold">{formatINR(e.amount)}</p>
-                        <div className="flex shrink-0 gap-1">
+                        <p className="tabular shrink-0 whitespace-nowrap font-mono text-sm font-bold">{formatINR(e.amount)}</p>
+                        <div className="col-span-2 col-start-2 flex justify-end gap-1 sm:col-auto sm:shrink-0">
                           <IconBtn label="Save as monthly recurring bill" onClick={() => makeRecurring(e)}>
                             <Repeat size={14} />
                           </IconBtn>
@@ -204,7 +211,7 @@ function IconBtn({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`rounded-lg p-2 text-mute transition hover:bg-white/5 active:scale-90 ${danger ? 'hover:text-red-300' : 'hover:text-ink'}`}
+      className={`rounded-lg p-3 text-mute transition active:scale-90 sm:p-2 ${danger ? 'hover:text-red-300' : 'hover:text-ink'} hover:bg-white/5`}
     >
       {children}
     </button>
